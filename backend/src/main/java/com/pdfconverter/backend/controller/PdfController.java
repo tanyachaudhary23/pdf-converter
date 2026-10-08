@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/convert")
@@ -22,9 +23,9 @@ public class PdfController {
         this.pdfService = pdfService;
     }
 
-    @PostMapping("/image-to-pdf")
-    public ResponseEntity<byte[]> imageToPdf(@RequestParam("file") MultipartFile file) throws IOException {
-        byte[] pdf = pdfService.convertImageToPdf(file);
+    @PostMapping("/images-to-pdf")
+    public ResponseEntity<byte[]> imagesToPdf(@RequestParam("files") List<MultipartFile> files) throws IOException {
+        byte[] pdf = pdfService.convertImagesToPdf(files);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=converted.pdf")
