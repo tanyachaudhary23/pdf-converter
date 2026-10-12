@@ -16,29 +16,31 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(InvalidFileException.class)
     public ResponseEntity<Map<String, String>> handleInvalidFile(InvalidFileException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", ex.getMessage()));
     }
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Map<String, String>> handleTooLarge(MaxUploadSizeExceededException ex) {
         return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
-                .body(Map.of("error", "File too large. Maximum size is 10 MB per file."));
+                .body(Map.of("error", "Upload too large. Each file must be 10 MB or less and the total 50 MB or less."));
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<Map<String, String>> handleMissingPart(MissingServletRequestPartException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "Missing upload field '" + ex.getRequestPartName() + "'."));
+    }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<Map<String, String>> handleNotMultipart(MultipartException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "Please upload a file using a multipart form."));
     }
 
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Map<String, String>> handleIo(IOException ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Could not process the file."));
-    }
-    @ExceptionHandler(MultipartException.class)
-    public ResponseEntity<Map<String, String>> handleNotMultipart(MultipartException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Please upload at least one image using the 'files' field."));
-    }
-
-    @ExceptionHandler(MissingServletRequestPartException.class)
-    public ResponseEntity<Map<String, String>> handleMissingPart(MissingServletRequestPartException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(Map.of("error", "Please upload at least one image using the 'files' field."));
     }
 }

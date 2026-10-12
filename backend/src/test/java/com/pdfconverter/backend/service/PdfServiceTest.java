@@ -16,6 +16,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.apache.pdfbox.pdmodel.PDPage;
+import java.io.ByteArrayInputStream;
+import java.util.zip.ZipInputStream;
+
 class PdfServiceTest {
 
     private final PdfService service = new PdfService();
@@ -57,4 +61,49 @@ class PdfServiceTest {
 
         assertThrows(InvalidFileException.class, () -> service.convertImagesToPdf(new ArrayList<>(files)));
     }
+
+    private byte[] pdfWithPages(int count) throws IOException {
+        try (PDDocument doc = new PDDocument()) {
+            for (int i = 0; i < count; i++) {
+                doc.addPage(new PDPage());
+            }
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            doc.save(out);
+            return out.toByteArray();
+        }
+    }
+
+    private int countZipEntries(byte[] zipBytes) throws IOException {
+        int count = 0;
+        try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(zipBytes))) {
+            while (zis.getNextEntry() != null) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    @Test
+    void pdfToImagesCreatesOneImagePerPage() throws IOException {
+        MockMultipartFile pdf = new MockMultipartFile("file", "test.pdf", "application/pdf", pdfWithPages(3));
+
+        byte[] zip = service.convertPdfToImages(pdf);
+
+        assertEquals(3, countZipEntries(zip));
+    }
+
+    @Test
+    void pdfToImagesRejectsNonPdf() {
+        MockMultipartFile fake = new MockMultipartFile("file", "fake.pdf", "application/pdf", "hello".getBytes());
+
+        assertThrows(InvalidFileException.class, () -> service.convertPdfToImages(fake));
+    }
+
+    @Test
+    void pdfToImagesRejectsTooManyPages() throws IOException {
+        MockMultipartFile big = new MockMultipartFile("file", "big.pdf", "application/pdf", pdfWithPages(51));
+
+        assertThrows(InvalidFileException.class, () -> service.convertPdfToImages(big));
+    }
+
 }

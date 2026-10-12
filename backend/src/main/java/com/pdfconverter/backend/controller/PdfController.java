@@ -32,4 +32,13 @@ public class PdfController {
                 .contentType(MediaType.APPLICATION_PDF)
                 .body(pdf);
     }
+    @PostMapping("/pdf-to-images")
+    public ResponseEntity<byte[]> pdfToImages(@RequestParam("file") MultipartFile file) throws IOException {
+        byte[] zip = pdfService.convertPdfToImages(file);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=pages.zip")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zip);
+    }
 }
