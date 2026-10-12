@@ -41,4 +41,25 @@ public class PdfController {
                 .contentType(MediaType.parseMediaType("application/zip"))
                 .body(zip);
     }
+
+    @PostMapping("/merge-pdfs")
+    public ResponseEntity<byte[]> mergePdfs(@RequestParam("files") List<MultipartFile> files) throws IOException {
+        byte[] pdf = pdfService.mergePdfs(files);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=merged.pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
+    @PostMapping("/split-pdf")
+    public ResponseEntity<byte[]> splitPdf(@RequestParam("file") MultipartFile file,
+                                           @RequestParam("ranges") String ranges) throws IOException {
+        byte[] zip = pdfService.splitPdf(file, ranges);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=split.zip")
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(zip);
+    }
 }

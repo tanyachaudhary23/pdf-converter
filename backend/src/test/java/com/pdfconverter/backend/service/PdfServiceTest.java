@@ -106,4 +106,46 @@ class PdfServiceTest {
         assertThrows(InvalidFileException.class, () -> service.convertPdfToImages(big));
     }
 
+    @Test
+    void mergeCombinesPagesFromAllPdfs() throws IOException {
+        MockMultipartFile a = new MockMultipartFile("files", "a.pdf", "application/pdf", pdfWithPages(2));
+        MockMultipartFile b = new MockMultipartFile("files", "b.pdf", "application/pdf", pdfWithPages(3));
+
+        byte[] merged = service.mergePdfs(List.of(a, b));
+
+        try (PDDocument doc = Loader.loadPDF(merged)) {
+            assertEquals(5, doc.getNumberOfPages());
+        }
+    }
+
+    @Test
+    void mergeRejectsSinglePdf() throws IOException {
+        MockMultipartFile a = new MockMultipartFile("files", "a.pdf", "application/pdf", pdfWithPages(2));
+
+        assertThrows(InvalidFileException.class, () -> service.mergePdfs(List.of(a)));
+    }
+
+    @Test
+    void splitCreatesOnePartPerRange() throws IOException {
+        MockMultipartFile pdf = new MockMultipartFile("file", "t.pdf", "application/pdf", pdfWithPages(5));
+
+        byte[] zip = service.splitPdf(pdf, "1-2,4");
+
+        assertEquals(2, countZipEntries(zip));
+    }
+
+    @Test
+    void splitRejectsRangeBeyondLastPage() throws IOException {
+        MockMultipartFile pdf = new MockMultipartFile("file", "t.pdf", "application/pdf", pdfWithPages(3));
+
+        assertThrows(InvalidFileException.class, () -> service.splitPdf(pdf, "2-9"));
+    }
+
+    @Test
+    void splitRejectsGarbageRange() throws IOException {
+        MockMultipartFile pdf = new MockMultipartFile("file", "t.pdf", "application/pdf", pdfWithPages(3));
+
+        assertThrows(InvalidFileException.class, () -> service.splitPdf(pdf, "abc"));
+    }
+
 }
