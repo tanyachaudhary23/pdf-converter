@@ -163,7 +163,7 @@ public class PdfService {
     public byte[] splitPdf(MultipartFile file, String ranges) throws IOException {
         validatePdf(file);
         if (ranges == null || ranges.isBlank()) {
-            throw new InvalidFileException("Please provide page ranges, for example 1-3,5.");
+            throw new InvalidFileException("Please provide page ranges, for example (1-3,5-6),(1-3,5),(1,5-6).");
         }
 
         try (PDDocument source = loadPdf(file);
