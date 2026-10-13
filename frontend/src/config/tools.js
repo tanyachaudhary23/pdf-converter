@@ -3,6 +3,7 @@ export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB, same as the backend
 const IMAGE_TYPES = ["image/jpeg", "image/png"];
 const PDF_TYPES = ["application/pdf"];
 
+// "id" must match the backend URL ending: /api/convert/<id>
 export const TOOLS = [
   {
     id: "images-to-pdf",
@@ -13,6 +14,8 @@ export const TOOLS = [
     multiple: true,
     minFiles: 1,
     maxFiles: 10,
+    fieldName: "files",
+    outputName: "converted.pdf",
   },
   {
     id: "pdf-to-images",
@@ -23,6 +26,8 @@ export const TOOLS = [
     multiple: false,
     minFiles: 1,
     maxFiles: 1,
+    fieldName: "file",
+    outputName: "pages.zip",
   },
   {
     id: "merge-pdfs",
@@ -33,6 +38,8 @@ export const TOOLS = [
     multiple: true,
     minFiles: 2,
     maxFiles: 10,
+    fieldName: "files",
+    outputName: "merged.pdf",
   },
   {
     id: "split-pdf",
@@ -43,5 +50,8 @@ export const TOOLS = [
     multiple: false,
     minFiles: 1,
     maxFiles: 1,
+    fieldName: "file",
+    outputName: "split.zip",
+    needsRanges: true,
   },
 ];
