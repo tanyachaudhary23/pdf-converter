@@ -1,18 +1,23 @@
 import { useRef, useState } from "react";
+import { Plus, Upload } from "lucide-react";
 
-export default function DropZone({ accept, multiple, hint, onFilesSelected }) {
+export default function DropZone({ tool, disabled, onFilesSelected }) {
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
 
+  function openPicker() {
+    if (!disabled) inputRef.current.click();
+  }
+
   function handleDragOver(e) {
     e.preventDefault(); // required, otherwise the browser will not allow a drop
-    setDragging(true);
+    if (!disabled) setDragging(true);
   }
 
   function handleDrop(e) {
-    e.preventDefault();
+    e.preventDefault(); // stops the browser from opening the dropped file
     setDragging(false);
-    onFilesSelected(Array.from(e.dataTransfer.files));
+    if (!disabled) onFilesSelected(Array.from(e.dataTransfer.files));
   }
 
   function handleInputChange(e) {
@@ -22,32 +27,28 @@ export default function DropZone({ accept, multiple, hint, onFilesSelected }) {
 
   return (
     <div
-      role="button"
-      tabIndex={0}
-      onClick={() => inputRef.current.click()}
-      onKeyDown={(e) => e.key === "Enter" && inputRef.current.click()}
+      className={`upload-zone ${dragging ? "dragging" : ""} ${disabled ? "disabled" : ""}`}
+      onClick={openPicker}
       onDragOver={handleDragOver}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
-      className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-12 text-center transition ${
-        dragging
-          ? "border-blue-500 bg-blue-50"
-          : "border-slate-300 bg-white hover:border-slate-400"
-      }`}
     >
       <input
         ref={inputRef}
         type="file"
-        accept={accept}
-        multiple={multiple}
+        aria-label="Select files"
+        accept={tool.accept}
+        multiple={tool.multiple}
         className="hidden"
         onChange={handleInputChange}
       />
-      <p className="text-base font-medium text-slate-800">
-        Drag and drop {multiple ? "files" : "a file"} here
-      </p>
-      <p className="mt-1 text-sm text-slate-500">or click to browse</p>
-      <p className="mt-3 text-xs text-slate-400">{hint}</p>
+      <Upload size={30} />
+      <p>{tool.dropText}</p>
+      <button type="button" className="btn btn-ink btn-action" disabled={disabled}>
+        <Plus />
+        {tool.chooseText}
+      </button>
+      <div className="workspace-note mt-3">{tool.hint}</div>
     </div>
   );
 }

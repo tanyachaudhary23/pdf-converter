@@ -3,8 +3,11 @@ const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
 export async function convertFiles(tool, files, ranges) {
   const formData = new FormData();
   files.forEach((file) => formData.append(tool.fieldName, file));
+
   if (tool.needsRanges) {
-    formData.append("ranges", ranges.trim());
+    // Pasted text often has a typographic dash (1–3); the backend expects "-"
+    const cleaned = ranges.trim().replace(/[‐-―−]/g, "-");
+    formData.append("ranges", cleaned);
   }
 
   let response;
